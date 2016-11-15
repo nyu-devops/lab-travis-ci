@@ -15,6 +15,7 @@
 import os
 from redis import Redis
 from flask import Flask, Response, jsonify, request, json, url_for
+from pets import Pet
 
 # Status Codes
 HTTP_200_OK = 200
@@ -78,13 +79,10 @@ def get_pet(id):
 def create_pet():
     # payload = request.get_json()
     payload = json.loads(request.data)
-    if is_valid(payload):
+    if Pet.is_valid(payload):
         id = next_index()
-        pet = {}
-        pet['id'] = id
-        pet['name'] = payload['name']
-        pet['category'] = payload['category']
-        redis.hmset(id, pet)
+        pet = Pet(id, payload['name'], payload['category'])
+        redis.hmset(id, pet.to_dict())
         message = redis.hgetall(id)
         rc = HTTP_201_CREATED
     else:
@@ -104,13 +102,10 @@ def create_pet():
 @app.route('/pets/<int:id>', methods=['PUT'])
 def update_pet(id):
     payload = json.loads(request.data)
-    if is_valid(payload):
+    if Pet.is_valid(payload):
         if redis.exists(id):
-            pet = {}
-            pet['id'] = id
-            pet['name'] = payload['name']
-            pet['category'] = payload['category']
-            redis.hmset(id, pet)
+            pet = Pet(id, payload['name'], payload['category'])
+            redis.hmset(id, pet.to_dict())
             message = redis.hgetall(id)
             rc = HTTP_200_OK
         else:
@@ -144,27 +139,13 @@ def reply(message, rc):
     response.status_code = rc
     return response
 
-def is_valid(data):
-    valid = False
-    try:
-        name = data['name']
-        category = data['category']
-        valid = True
-    except KeyError as err:
-        pass
-        #app.logger.error('Missing value error: %s in data: %s' % (err, json.dumps(data)))
-    return valid
-
 # load sample data
 def data_load(payload):
     id = next_index()
-    pet = {}
-    pet['id'] = id
-    pet['name'] = payload['name']
-    pet['category'] = payload['category']
-    redis.hmset(id, pet)
+    pet = Pet(id, payload['name'], payload['category'])
+    redis.hmset(id, pet.to_dict())
 
-def reset():
+def data_reset():
     redis.flushall()
 
 # Initialize Redis

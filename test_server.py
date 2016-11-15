@@ -8,6 +8,7 @@
 
 import unittest
 import json
+import os
 import server
 
 # Status Codes
@@ -31,7 +32,7 @@ class TestPetServer(unittest.TestCase):
         server.app.debug = True
         self.app = server.app.test_client()
         server.init_redis('127.0.0.1', 6379, None)
-        server.reset()
+        server.data_reset()
         server.data_load(pet1)
         server.data_load(pet2)
 
@@ -42,13 +43,11 @@ class TestPetServer(unittest.TestCase):
 
     def test_get_pet_list(self):
         resp = self.app.get('/pets')
-        #print 'resp_data: ' + resp.data
         self.assertTrue( resp.status_code == HTTP_200_OK )
         self.assertTrue( len(resp.data) > 0 )
 
     def test_get_pet(self):
         resp = self.app.get('/pets/2')
-        #print 'resp_data: ' + resp.data
         self.assertTrue( resp.status_code == HTTP_200_OK )
         data = json.loads(resp.data)
         self.assertTrue (data['name'] == 'kitty')
@@ -70,16 +69,9 @@ class TestPetServer(unittest.TestCase):
         self.assertTrue (new_json['name'] == 'sammy')
         # check that count has gone up
         resp = self.app.get('/pets')
-        # print 'resp_data(2): ' + resp.data
         data = json.loads(resp.data)
         self.assertTrue( resp.status_code == HTTP_200_OK )
         self.assertTrue( len(data) == pet_count + 1 )
-
-    # def test_create_existing_pet(self):
-    #     new_pet = {'name': 'fido', 'kind': 'dog'}
-    #     data = json.dumps(new_pet)
-    #     resp = self.app.post('/pets', data=data, content_type='application/json')
-    #     self.assertTrue( resp.status_code == HTTP_409_CONFLICT )
 
     def test_update_pet(self):
         pet = {}
@@ -90,6 +82,13 @@ class TestPetServer(unittest.TestCase):
         self.assertTrue( resp.status_code == HTTP_200_OK )
         new_json = json.loads(resp.data)
         self.assertTrue (new_json['category'] == 'loin')
+
+    def test_update_pet_with_missing_data(self):
+        pet = {}
+        pet['name'] = "kitty"
+        data = json.dumps(pet)
+        resp = self.app.put('/pets/2', data=data, content_type='application/json')
+        self.assertTrue( resp.status_code == HTTP_400_BAD_REQUEST )
 
     def test_update_pet_not_found(self):
         new_kitty = {"name": "timothy", "category": "mouse"}
@@ -115,13 +114,14 @@ class TestPetServer(unittest.TestCase):
 
     def test_query_pets(self):
         resp = self.app.get('/pets?category=dog')
-        #print 'resp_data: ' + resp.data
-        print resp.data
         self.assertTrue( resp.status_code == HTTP_200_OK )
         self.assertTrue( len(resp.data) > 0 )
         self.assertTrue( 'fido' in resp.data)
         self.assertFalse( 'kitty' in resp.data)
 
+    def test_vcap_services(self):
+        os.environ["VCAP_SERVICES"] = '{"rediscloud":[{"credentials": {"hostname": "127.0.0.1", "password": "", "port": "6379"}}]}'
+        server.connect_to_redis()
 
 ######################################################################
 # Utility functions
