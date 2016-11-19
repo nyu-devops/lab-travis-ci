@@ -81,7 +81,8 @@ Vagrant.configure(2) do |config|
   # Install Docker Compose after Docker Engine
   config.vm.provision "shell", inline: <<-SHELL
     sudo pip install docker-compose
-    # Install the IBM Container plugin
+    # Install the IBM Container plugin as vagrant
+    sudo su - vagrant
     cf plugins
     echo Y | cf install-plugin https://static-ice.ng.bluemix.net/ibm-containers-linux_x64
     cf plugins
