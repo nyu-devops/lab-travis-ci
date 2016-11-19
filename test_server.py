@@ -19,10 +19,6 @@ HTTP_400_BAD_REQUEST = 400
 HTTP_404_NOT_FOUND = 404
 HTTP_409_CONFLICT = 409
 
-# Pet Model for demo
-pet1 = {"name": "fido", "category": "dog"}
-pet2 = {"name": "kitty", "category": "cat"}
-
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
@@ -31,10 +27,10 @@ class TestPetServer(unittest.TestCase):
     def setUp(self):
         server.app.debug = True
         self.app = server.app.test_client()
-        server.init_redis('127.0.0.1', 6379, None)
+        server.inititalize_redis()
         server.data_reset()
-        server.data_load(pet1)
-        server.data_load(pet2)
+        server.data_load({"name": "fido", "category": "dog"})
+        server.data_load({"name": "kitty", "category": "cat"})
 
     def test_index(self):
         resp = self.app.get('/')
@@ -121,7 +117,9 @@ class TestPetServer(unittest.TestCase):
 
     def test_vcap_services(self):
         os.environ["VCAP_SERVICES"] = '{"rediscloud":[{"credentials": {"hostname": "127.0.0.1", "password": "", "port": "6379"}}]}'
-        server.connect_to_redis()
+        server.inititalize_redis()
+        resp = self.app.get('/pets')
+        self.assertTrue( resp.status_code == HTTP_200_OK )
 
 ######################################################################
 # Utility functions
