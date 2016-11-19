@@ -115,12 +115,6 @@ class TestPetServer(unittest.TestCase):
         self.assertTrue( 'fido' in resp.data)
         self.assertFalse( 'kitty' in resp.data)
 
-    def test_vcap_services(self):
-        os.environ["VCAP_SERVICES"] = '{"rediscloud":[{"credentials": {"hostname": "127.0.0.1", "password": "", "port": "6379"}}]}'
-        server.inititalize_redis()
-        resp = self.app.get('/pets')
-        self.assertTrue( resp.status_code == HTTP_200_OK )
-
 ######################################################################
 # Utility functions
 ######################################################################
