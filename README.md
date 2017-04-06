@@ -11,7 +11,34 @@ This lab contains a `.travis.yml` file that shows you how to run your tests and 
 
 ## Setup
 
-For easy setup, you need to have Vagrant and VirtualBox installed. Then all you have to do is clone this repo and invoke vagrant:
+To complete this lab you will need a mirror of this repo. You cannot just clone the repo because you need to make a change in order to trigger Travis CI. You also cannot Fork it because you want to test Pull requests and the Pull Request of the Fork will come back to this repo and not your Fork. Therefore you need to copy the repo in an opperation know as `mirroring`
+
+### Mirroring the repository
+
+Here are the steps to make a mirror of this repo:
+
+- Create a new repository in your own GitHub account called: `nyu-lab-travis-ci`
+- Open Terminal
+- Create a bare clone of the repository
+    ```
+    git clone --bare https://github.com/nyu-devops/lab-travis-ci.git
+    ```
+- Push and Mirror the clone to the new repository
+    ```
+    cd old-repository.git
+    git push --mirror https://github.com/<your_account>/nyu-lab-travis-ci.git
+    ```
+- Remove the temporary local repository you created in step 1.
+    ```
+    cd ..
+    rm -rf lab-travis-ci.git
+    ```
+
+You should no have mirror of this repository under your own GitHub account that you can make changes to and issue pull requests and see how Travis CI runs your tests for you with every Pull Request or push to master.
+
+## If you want to run the tests locally
+
+There is no need to run the tests locally because the purpose of this lab is to have Travis Ci run them for you but if you wanted to run them yourself, the easy setup is to have [Vagrant](https://www.vagrantup.com/) and [VirtualBox](https://www.virtualbox.org/) installed. Then all you have to do is clone this repo and invoke vagrant:
 
     git clone https://github.com/nyu-devops/lab-travis-ci.git
     cd lab-travis-ci
