@@ -11,30 +11,30 @@ This lab contains a `.travis.yml` file that shows you how to run your tests and 
 
 ## Setup
 
-To complete this lab you will need a mirror of this repo. You cannot just clone the repo because you need to make a change in order to trigger Travis CI. You also cannot Fork it because you want to test Pull requests and the Pull Request of the Fork will come back to this repo and not your Fork. Therefore you need to copy the repo in an opperation know as `mirroring`
+To complete this lab you will need a mirror of this repo. You cannot just clone the repo because you need to make a change in order to trigger Travis CI. You also don't want to Fork it because you want to test Pull Requests and the Pull Request of the Fork will come back to this repo and not your Fork. Therefore you need to copy the repo to your own GitHub account using an opperation know as `mirroring`
 
 ### Mirroring the repository
 
-Here are the steps to make a mirror of this repo:
+Here are the steps to make a mirror of this repo to your GutHub account:
 
 - Create a new repository in your own GitHub account called: `nyu-lab-travis-ci`
-- Open Terminal
+- Open Terminal on Mac, Command Prompt on Windows
 - Create a bare clone of the repository
     ```
     git clone --bare https://github.com/nyu-devops/lab-travis-ci.git
     ```
-- Push and Mirror the clone to the new repository
+- Push and Mirror the clone to the new repository `nyu-lab-travis-ci` on your GitHub
     ```
     cd old-repository.git
     git push --mirror https://github.com/<your_account>/nyu-lab-travis-ci.git
     ```
-- Remove the temporary local repository you created in step 1.
+- Remove the temporary local repository you just created
     ```
     cd ..
     rm -rf lab-travis-ci.git
     ```
 
-You should no have mirror of this repository under your own GitHub account that you can make changes to and issue pull requests and see how Travis CI runs your tests for you with every Pull Request or push to master.
+You should now have a mirror of this repository called `nyu-lab-travis-ci` under your own GitHub account that you can make changes to and create Pull Requests and see how Travis CI runs your tests for you with every Pull Request or `push` to master.
 
 ## If you want to run the tests locally
 
