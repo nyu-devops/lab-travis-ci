@@ -30,6 +30,7 @@ POST /pets/{id}/purchase - Action to purchase a Pet
 import os
 import sys
 import logging
+from functools import wraps
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from models import Pet, DataValidationError
 
@@ -93,6 +94,25 @@ def internal_server_error(error):
     app.logger.info(message)
     return jsonify(status=500, error='Internal Server Error', message=message), 500
 
+######################################################################
+# DECORATORS
+######################################################################
+def requires_content_type(*content_types):
+    """ Use this decorator to check content type """
+    def decorator(func):
+        """ Inner decorator """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            """ Checks that the content type is correct """
+            for content_type in content_types:
+                if request.headers['Content-Type'] == content_type:
+                    return func(*args, **kwargs)
+
+            app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+            abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                  'Content-Type must be {}'.format(content_types))
+        return wrapper
+    return decorator
 
 ######################################################################
 # GET INDEX
@@ -143,6 +163,7 @@ def get_pets(pet_id):
 # ADD A NEW PET
 ######################################################################
 @app.route('/pets', methods=['POST'])
+@requires_content_type('application/json', 'application/x-www-form-urlencoded')
 def create_pets():
     """
     Creates a Pet
@@ -150,7 +171,6 @@ def create_pets():
     This endpoint will create a Pet based the data in the body that is posted
     or data that is sent via an html form post.
     """
-    check_content_type('application/json')
     data = {}
     # Check for form submission data
     if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
@@ -174,13 +194,13 @@ def create_pets():
 # UPDATE AN EXISTING PET
 ######################################################################
 @app.route('/pets/<int:pet_id>', methods=['PUT'])
+@requires_content_type('application/json')
 def update_pets(pet_id):
     """
     Update a Pet
 
     This endpoint will update a Pet based the body that is posted
     """
-    check_content_type('application/json')
     pet = Pet.find(pet_id)
     if not pet:
         abort(HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
@@ -240,12 +260,12 @@ def data_reset():
     """ Removes all Pets from the database """
     Pet.remove_all()
 
-def check_content_type(content_type):
-    """ Checks that the media type is correct """
-    if request.headers['Content-Type'] == content_type:
-        return
-    app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-    abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
+# def check_content_type(content_type):
+#     """ Checks that the media type is correct """
+#     if request.headers['Content-Type'] == content_type:
+#         return
+#     app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
+#     abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
 
 # @app.before_first_request
 def initialize_logging(log_level=logging.INFO):

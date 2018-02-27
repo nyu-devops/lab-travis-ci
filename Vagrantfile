@@ -1,10 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
+# This file requires Vagrant 2.0.2 or later
 Vagrant.configure(2) do |config|
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
@@ -15,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # Windows users need to change the permissions explicitly so that Windows doesn't
   # set the execute bit on all of your files which messes with GitHub users on Mac and Linux
-  config.vm.synced_folder "./", "/vagrant", owner: "ubuntu", mount_options: ["dmode=755,fmode=644"]
+  config.vm.synced_folder "./", "/vagrant", owner: "vagrant", mount_options: ["dmode=755,fmode=644"]
 
   # Example for VirtualBox:
   config.vm.provider "virtualbox" do |vb|
@@ -43,7 +40,7 @@ Vagrant.configure(2) do |config|
     apt-get -y autoremove
     pip install --upgrade pip
     # Make vi look nice
-    sudo -H -u ubuntu echo "colorscheme desert" > ~/.vimrc
+    sudo -H -u vagrant echo "colorscheme desert" > ~/.vimrc
     # Install app dependencies
     echo "\n******************************"
     echo " Installing App Dependencies"
@@ -58,7 +55,7 @@ Vagrant.configure(2) do |config|
   config.vm.provision "shell", inline: <<-SHELL
     # Prepare Redis data share
     sudo mkdir -p /var/lib/redis/data
-    sudo chown ubuntu:ubuntu /var/lib/redis/data
+    sudo chown vagrant:vagrant /var/lib/redis/data
   SHELL
 
   # Add Redis docker container
