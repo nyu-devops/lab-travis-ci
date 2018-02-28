@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # Windows users need to change the permissions explicitly so that Windows doesn't
   # set the execute bit on all of your files which messes with GitHub users on Mac and Linux
-  config.vm.synced_folder "./", "/vagrant", owner: "vagrant", mount_options: ["dmode=755,fmode=644"]
+  config.vm.synced_folder "./", "/vagrant", owner: "vagrant", mount_options: ["dmode=775,fmode=664"]
 
   # Example for VirtualBox:
   config.vm.provider "virtualbox" do |vb|
