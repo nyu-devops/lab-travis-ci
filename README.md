@@ -1,7 +1,7 @@
 # nyu-travis-ci
 
-[![Build Status](https://travis-ci.org/rofrano/nyu-lab-travis-ci.svg?branch=master)](https://travis-ci.org/rofrano/nyu-lab-travis-ci)
-[![Codecov](https://img.shields.io/codecov/c/github/nyu-devops/lab-travis-ci.svg)]()
+[![Build Status](https://travis-ci.org/bk1713/lab-travis-ci.svg?branch=master)](https://travis-ci.org/bk1713/lab-travis-ci)
+[![Codecov](https://img.shields.io/codecov/c/github/bk1713/lab-travis-ci.svg)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
     
 This is for NYU DevOps lab on using Travis CI with Redis for Continuous Integration
@@ -69,3 +69,7 @@ Nose is configured to automatically include the flags `--rednose --with-spec --s
     * .travis.yml -- the Travis CI file that automates testing
 
 This repo is part of the CSCI-GA.3033-013 DevOps course taught by John Rofrano at NYU Courant Institute of Mathematical Sciences, New York
+
+#NewLine
+
+#XYZ
