@@ -6,6 +6,7 @@
     
 This is for NYU DevOps lab on using Travis CI with Redis for Continuous Integration
 
+
 ## Introduction
 
 This lab contains a `.travis.yml` file that shows you how to run your tests and request that a Redis service be attached while running them. It also uses Code Coverage to determine how complete your testng is.
