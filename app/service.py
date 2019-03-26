@@ -33,10 +33,7 @@ import logging
 from functools import wraps
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from models import Pet, DataValidationError
-
-# Create Flask application
-app = Flask(__name__)
-app.config['LOGGING_LEVEL'] = logging.INFO
+from app import app
 
 # Pull options from environment
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
@@ -124,6 +121,7 @@ def requires_content_type(*content_types):
 @app.route('/')
 def index():
     """ Send back the home page """
+    app.logger.info('Request for home page')
     return app.send_static_file('index.html')
 
 ######################################################################
@@ -132,6 +130,7 @@ def index():
 @app.route('/pets', methods=['GET'])
 def list_pets():
     """ Returns all of the Pets """
+    app.logger.info('Request for List Pets')
     pets = []
     category = request.args.get('category')
     name = request.args.get('name')
@@ -158,6 +157,7 @@ def get_pets(pet_id):
 
     This endpoint will return a Pet based on it's id
     """
+    app.logger.info('Request to get Pet with id %s', pet_id)
     pet = Pet.find(pet_id)
     if not pet:
         abort(HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
@@ -175,6 +175,7 @@ def create_pets():
     This endpoint will create a Pet based the data in the body that is posted
     or data that is sent via an html form post.
     """
+    app.logger.info('Request to create a Pet')
     data = {}
     # Check for form submission data
     if request.headers.get('Content-Type') == 'application/x-www-form-urlencoded':
@@ -205,6 +206,7 @@ def update_pets(pet_id):
 
     This endpoint will update a Pet based the body that is posted
     """
+    app.logger.info('Request to update Pet with id %s', pet_id)
     pet = Pet.find(pet_id)
     if not pet:
         abort(HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
@@ -224,6 +226,7 @@ def delete_pets(pet_id):
 
     This endpoint will delete a Pet based the id specified in the path
     """
+    app.logger.info('Request to delete Pet with id %s', pet_id)
     pet = Pet.find(pet_id)
     if pet:
         pet.delete()
@@ -235,6 +238,7 @@ def delete_pets(pet_id):
 @app.route('/pets/<int:pet_id>/purchase', methods=['PUT'])
 def purchase_pets(pet_id):
     """ Purchase a Pet """
+    app.logger.info('Request to purchase Pet with id %s', pet_id)
     pet = Pet.find(pet_id)
     if not pet:
         abort(HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
