@@ -24,7 +24,7 @@ import json
 import unittest
 from mock import patch
 from redis import Redis, ConnectionError
-from models import Pet, DataValidationError
+from app.models import Pet, DataValidationError
 
 VCAP_SERVICES = {
     'rediscloud': [

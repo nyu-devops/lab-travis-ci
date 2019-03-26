@@ -22,7 +22,7 @@ nosetests -v --with-spec --spec-color
 import unittest
 import logging
 import json
-import server
+import app.service as service
 
 # Status Codes
 HTTP_200_OK = 200
@@ -37,16 +37,16 @@ HTTP_415_UNSUPPORTED_MEDIA_TYPE = 415
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
-class TestPetServer(unittest.TestCase):
+class TestPetService(unittest.TestCase):
     """ Pet Service tests """
 
     def setUp(self):
-        self.app = server.app.test_client()
-        server.initialize_logging(logging.CRITICAL)
-        server.init_db()
-        server.data_reset()
-        server.data_load({"name": "fido", "category": "dog", "available": True})
-        server.data_load({"name": "kitty", "category": "cat", "available": True})
+        self.app = service.app.test_client()
+        service.initialize_logging(logging.CRITICAL)
+        service.init_db()
+        service.data_reset()
+        service.data_load({"name": "fido", "category": "dog", "available": True})
+        service.data_load({"name": "kitty", "category": "cat", "available": True})
 
     def test_index(self):
         """ Test the index page """
