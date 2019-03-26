@@ -85,24 +85,24 @@ class Pet(object):
 #  S T A T I C   D A T A B S E   M E T H O D S
 ######################################################################
 
-    @staticmethod
-    def __next_index():
+    @classmethod
+    def __next_index(cls):
         """ Increments the index and returns it """
-        return Pet.redis.incr('index')
+        return cls.redis.incr('index')
 
-    @staticmethod
-    def remove_all():
+    @classmethod
+    def remove_all(cls):
         """ Removes all Pets from the database """
-        Pet.redis.flushall()
+        cls.redis.flushall()
 
-    @staticmethod
-    def all():
+    @classmethod
+    def all(cls):
         """ Query that returns all Pets """
-        # results = [Pet.from_dict(redis.hgetall(key)) for key in redis.keys() if key != 'index']
+        # results = [cls.from_dict(redis.hgetall(key)) for key in redis.keys() if key != 'index']
         results = []
-        for key in Pet.redis.keys():
+        for key in cls.redis.keys():
             if key != 'index':  # filer out our id index
-                data = pickle.loads(Pet.redis.get(key))
+                data = pickle.loads(cls.redis.get(key))
                 pet = Pet(data['id']).deserialize(data)
                 results.append(pet)
         return results
@@ -111,20 +111,20 @@ class Pet(object):
 #  F I N D E R   M E T H O D S
 ######################################################################
 
-    @staticmethod
-    def find(pet_id):
+    @classmethod
+    def find(cls, pet_id):
         """ Query that finds Pets by their id """
-        if Pet.redis.exists(pet_id):
-            data = pickle.loads(Pet.redis.get(pet_id))
+        if cls.redis.exists(pet_id):
+            data = pickle.loads(cls.redis.get(pet_id))
             pet = Pet(data['id']).deserialize(data)
             return pet
         return None
 
-    @staticmethod
-    def __find_by(attribute, value):
+    @classmethod
+    def __find_by(cls, attribute, value):
         """ Generic Query that finds a key with a specific value """
         # return [pet for pet in Pet.__data if pet.category == category]
-        Pet.logger.info('Processing %s query for %s', attribute, value)
+        cls.logger.info('Processing %s query for %s', attribute, value)
         if isinstance(value, str):
             search_criteria = value.lower() # make case insensitive
         else:
@@ -142,40 +142,40 @@ class Pet(object):
                     results.append(Pet(data['id']).deserialize(data))
         return results
 
-    @staticmethod
-    def find_by_name(name):
+    @classmethod
+    def find_by_name(cls, name):
         """ Query that finds Pets by their name """
-        return Pet.__find_by('name', name)
+        return cls.__find_by('name', name)
 
-    @staticmethod
-    def find_by_category(category):
+    @classmethod
+    def find_by_category(cls, category):
         """ Query that finds Pets by their category """
-        return Pet.__find_by('category', category)
+        return cls.__find_by('category', category)
 
-    @staticmethod
-    def find_by_availability(available=True):
+    @classmethod
+    def find_by_availability(cls, available=True):
         """ Query that finds Pets by their availability """
-        return Pet.__find_by('available', available)
+        return cls.__find_by('available', available)
 
 ######################################################################
 #  R E D I S   D A T A B A S E   C O N N E C T I O N   M E T H O D S
 ######################################################################
 
-    @staticmethod
-    def connect_to_redis(hostname, port, password):
+    @classmethod
+    def connect_to_redis(cls, hostname, port, password):
         """ Connects to Redis and tests the connection """
-        Pet.logger.info("Testing Connection to: %s:%s", hostname, port)
-        Pet.redis = Redis(host=hostname, port=port, password=password)
+        cls.logger.info("Testing Connection to: %s:%s", hostname, port)
+        cls.redis = Redis(host=hostname, port=port, password=password)
         try:
-            Pet.redis.ping()
-            Pet.logger.info("Connection established")
+            cls.redis.ping()
+            cls.logger.info("Connection established")
         except ConnectionError:
-            Pet.logger.info("Connection Error from: %s:%s", hostname, port)
-            Pet.redis = None
-        return Pet.redis
+            cls.logger.info("Connection Error from: %s:%s", hostname, port)
+            cls.redis = None
+        return cls.redis
 
-    @staticmethod
-    def init_db(redis=None):
+    @classmethod
+    def init_db(cls, redis=None):
         """
         Initialized Redis database connection
 
@@ -190,32 +190,32 @@ class Pet(object):
           redis.ConnectionError - if ping() test fails
         """
         if redis:
-            Pet.logger.info("Using client connection...")
-            Pet.redis = redis
+            cls.logger.info("Using client connection...")
+            cls.redis = redis
             try:
-                Pet.redis.ping()
-                Pet.logger.info("Connection established")
+                cls.redis.ping()
+                cls.logger.info("Connection established")
             except ConnectionError:
-                Pet.logger.error("Client Connection Error!")
-                Pet.redis = None
+                cls.logger.error("Client Connection Error!")
+                cls.redis = None
                 raise ConnectionError('Could not connect to the Redis Service')
             return
         # Get the credentials from the Bluemix environment
         if 'VCAP_SERVICES' in os.environ:
-            Pet.logger.info("Using VCAP_SERVICES...")
+            cls.logger.info("Using VCAP_SERVICES...")
             vcap_services = os.environ['VCAP_SERVICES']
             services = json.loads(vcap_services)
             creds = services['rediscloud'][0]['credentials']
-            Pet.logger.info("Conecting to Redis on host %s port %s",
+            cls.logger.info("Conecting to Redis on host %s port %s",
                             creds['hostname'], creds['port'])
-            Pet.connect_to_redis(creds['hostname'], creds['port'], creds['password'])
+            cls.connect_to_redis(creds['hostname'], creds['port'], creds['password'])
         else:
-            Pet.logger.info("VCAP_SERVICES not found, checking localhost for Redis")
-            Pet.connect_to_redis('127.0.0.1', 6379, None)
+            cls.logger.info("VCAP_SERVICES not found, checking localhost for Redis")
+            cls.connect_to_redis('127.0.0.1', 6379, None)
             if not Pet.redis:
-                Pet.logger.info("No Redis on localhost, looking for redis host")
-                Pet.connect_to_redis('redis', 6379, None)
+                cls.logger.info("No Redis on localhost, looking for redis host")
+                cls.connect_to_redis('redis', 6379, None)
         if not Pet.redis:
             # if you end up here, redis instance is down.
-            Pet.logger.fatal('*** FATAL ERROR: Could not connect to the Redis Service')
+            cls.logger.fatal('*** FATAL ERROR: Could not connect to the Redis Service')
             raise ConnectionError('Could not connect to the Redis Service')
