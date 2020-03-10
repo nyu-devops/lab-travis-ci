@@ -7,7 +7,7 @@ Vagrant.configure(2) do |config|
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
   config.vm.box = "ubuntu/bionic64"
-  config.vm.hostname = "flask"
+  config.vm.hostname = "travis"
 
   config.vm.network "forwarded_port", guest: 5000, host: 5000, host_ip: "127.0.0.1"
   config.vm.network "private_network", ip: "192.168.33.10"
@@ -50,14 +50,13 @@ Vagrant.configure(2) do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    apt-get install -y git python-pip python-dev
+    apt-get install -y git python3 python3-pip python3-venv
     apt-get -y autoremove
     # Install app dependencies
     echo "\n******************************"
     echo " Installing App Dependencies"
     echo "******************************\n"
-    cd /vagrant
-    pip install -r requirements.txt
+    pip3 install -r /vagrant/requirements.txt
   SHELL
 
   ######################################################################

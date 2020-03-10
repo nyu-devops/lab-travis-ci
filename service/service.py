@@ -32,21 +32,13 @@ import sys
 import logging
 from functools import wraps
 from flask import Flask, jsonify, request, url_for, make_response, abort
-from models import Pet, DataValidationError
-from app import app
+from flask_api import status    # HTTP Status Codes
+from service.models import Pet, DataValidationError
+from service import app
 
 # Pull options from environment
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
 PORT = os.getenv('PORT', '5000')
-
-# Status Codes
-HTTP_200_OK = 200
-HTTP_201_CREATED = 201
-HTTP_204_NO_CONTENT = 204
-HTTP_400_BAD_REQUEST = 400
-HTTP_404_NOT_FOUND = 404
-HTTP_409_CONFLICT = 409
-HTTP_415_UNSUPPORTED_MEDIA_TYPE = 415
 
 ######################################################################
 # Error Handlers
@@ -56,40 +48,51 @@ def request_validation_error(error):
     """ Handles Value Errors from bad data """
     return bad_request(error)
 
-@app.errorhandler(400)
+@app.errorhandler(status.HTTP_400_BAD_REQUEST)
 def bad_request(error):
     """ Handles bad reuests with 400_BAD_REQUEST """
-    message = error.message or str(error)
-    app.logger.error(message)
-    return jsonify(status=400, error='Bad Request', message=message), 400
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_400_BAD_REQUEST,
+                   error='Bad Request',
+                   message=message), status.HTTP_400_BAD_REQUEST
 
-@app.errorhandler(404)
+@app.errorhandler(status.HTTP_404_NOT_FOUND)
 def not_found(error):
     """ Handles resources not found with 404_NOT_FOUND """
-    message = error.message or str(error)
-    app.logger.error(message)
-    return jsonify(status=404, error='Not Found', message=message), 404
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_404_NOT_FOUND,
+                   error='Not Found',
+                   message=message), status.HTTP_404_NOT_FOUND
 
-@app.errorhandler(405)
+@app.errorhandler(status.HTTP_405_METHOD_NOT_ALLOWED)
 def method_not_supported(error):
     """ Handles unsuppoted HTTP methods with 405_METHOD_NOT_SUPPORTED """
-    message = error.message or str(error)
-    app.logger.error(message)
-    return jsonify(status=405, error='Method not Allowed', message=message), 405
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_405_METHOD_NOT_ALLOWED,
+                   error='Method not Allowed',
+                   message=message), status.HTTP_405_METHOD_NOT_ALLOWED
 
-@app.errorhandler(415)
+@app.errorhandler(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 def mediatype_not_supported(error):
     """ Handles unsuppoted media requests with 415_UNSUPPORTED_MEDIA_TYPE """
-    message = error.message or str(error)
-    app.logger.error(message)
-    return jsonify(status=415, error='Unsupported media type', message=message), 415
+    message = str(error)
+    app.logger.warning(message)
+    return jsonify(status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                   error='Unsupported media type',
+                   message=message), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
-@app.errorhandler(500)
+@app.errorhandler(status.HTTP_500_INTERNAL_SERVER_ERROR)
 def internal_server_error(error):
     """ Handles unexpected server error with 500_SERVER_ERROR """
-    message = error.message or str(error)
+    message = str(error)
     app.logger.error(message)
-    return jsonify(status=500, error='Internal Server Error', message=message), 500
+    return jsonify(status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                   error='Internal Server Error',
+                   message=message), status.HTTP_500_INTERNAL_SERVER_ERROR
+
 
 ######################################################################
 # DECORATORS
@@ -102,7 +105,7 @@ def requires_content_type(*content_types):
         def wrapper(*args, **kwargs):
             """ Checks that the content type is correct """
             if not 'Content-Type' in request.headers:
-                abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
                       'Content-Type must be set')
 
             for content_type in content_types:
@@ -110,7 +113,7 @@ def requires_content_type(*content_types):
                     return func(*args, **kwargs)
 
             app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-            abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
                   'Content-Type must be {}'.format(content_types))
         return wrapper
     return decorator
@@ -145,7 +148,7 @@ def list_pets():
         pets = Pet.all()
 
     results = [pet.serialize() for pet in pets]
-    return make_response(jsonify(results), HTTP_200_OK)
+    return make_response(jsonify(results), status.HTTP_200_OK)
 
 ######################################################################
 # RETRIEVE A PET
@@ -160,8 +163,8 @@ def get_pets(pet_id):
     app.logger.info('Request to get Pet with id %s', pet_id)
     pet = Pet.find(pet_id)
     if not pet:
-        abort(HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
-    return make_response(jsonify(pet.serialize()), HTTP_200_OK)
+        abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
+    return make_response(jsonify(pet.serialize()), status.HTTP_200_OK)
 
 ######################################################################
 # ADD A NEW PET
@@ -192,7 +195,7 @@ def create_pets():
     pet.deserialize(data)
     pet.save()
     message = pet.serialize()
-    return make_response(jsonify(message), HTTP_201_CREATED,
+    return make_response(jsonify(message), status.HTTP_201_CREATED,
                          {'Location': url_for('get_pets', pet_id=pet.id, _external=True)})
 
 ######################################################################
@@ -209,11 +212,11 @@ def update_pets(pet_id):
     app.logger.info('Request to update Pet with id %s', pet_id)
     pet = Pet.find(pet_id)
     if not pet:
-        abort(HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
+        abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
     pet.deserialize(request.get_json())
     pet.id = pet_id
     pet.save()
-    return make_response(jsonify(pet.serialize()), HTTP_200_OK)
+    return make_response(jsonify(pet.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
@@ -230,7 +233,7 @@ def delete_pets(pet_id):
     pet = Pet.find(pet_id)
     if pet:
         pet.delete()
-    return make_response('', HTTP_204_NO_CONTENT)
+    return make_response('', status.HTTP_204_NO_CONTENT)
 
 ######################################################################
 # PURCHASE A PET
@@ -241,12 +244,12 @@ def purchase_pets(pet_id):
     app.logger.info('Request to purchase Pet with id %s', pet_id)
     pet = Pet.find(pet_id)
     if not pet:
-        abort(HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
+        abort(status.HTTP_404_NOT_FOUND, "Pet with id '{}' was not found.".format(pet_id))
     if not pet.available:
-        abort(HTTP_400_BAD_REQUEST, "Pet with id '{}' is not available.".format(pet_id))
+        abort(status.HTTP_400_BAD_REQUEST, "Pet with id '{}' is not available.".format(pet_id))
     pet.available = False
     pet.save()
-    return make_response(jsonify(pet.serialize()), HTTP_200_OK)
+    return make_response(jsonify(pet.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
@@ -273,13 +276,13 @@ def data_reset():
 #     if request.headers['Content-Type'] == content_type:
 #         return
 #     app.logger.error('Invalid Content-Type: %s', request.headers['Content-Type'])
-#     abort(HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
+#     abort(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, 'Content-Type must be {}'.format(content_type))
 
 # @app.before_first_request
 def initialize_logging(log_level=logging.INFO):
     """ Initialized the default logging to STDOUT """
     if not app.debug:
-        print 'Setting up logging...'
+        print('Setting up logging...')
         # Set up default logging for submodules to use STDOUT
         # datefmt='%m/%d/%Y %I:%M:%S %p'
         fmt = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
@@ -301,8 +304,8 @@ def initialize_logging(log_level=logging.INFO):
 #   M A I N
 ######################################################################
 if __name__ == "__main__":
-    print "************************************************************"
-    print "        P E T   R E S T   A P I   S E R V I C E "
-    print "************************************************************"
+    print("************************************************************")
+    print("        P E T   R E S T   A P I   S E R V I C E ")
+    print("************************************************************")
     initialize_logging(app.config['LOGGING_LEVEL'])
     app.run(host='0.0.0.0', port=int(PORT), debug=DEBUG)

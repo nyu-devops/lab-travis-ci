@@ -22,9 +22,9 @@ nosetests -v --with-spec --spec-color
 import os
 import json
 import unittest
-from mock import patch
+from unittest.mock import patch
 from redis import Redis, ConnectionError
-from app.models import Pet, DataValidationError
+from service.models import Pet, DataValidationError
 
 VCAP_SERVICES = {
     'rediscloud': [

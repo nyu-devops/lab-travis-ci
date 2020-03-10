@@ -26,8 +26,7 @@ for a server name 'redis' to connect to.
 import os
 import json
 import logging
-import pickle
-from redis import Redis
+from redis import StrictRedis
 from redis.exceptions import ConnectionError
 
 class DataValidationError(Exception):
@@ -53,7 +52,7 @@ class Pet(object):
             raise DataValidationError('name attribute is not set')
         if self.id == 0:
             self.id = Pet.__next_index()
-        Pet.redis.set(self.id, pickle.dumps(self.serialize()))
+        Pet.redis.set(self.id, json.dumps(self.serialize()))
 
     def delete(self):
         """ Deletes a Pet from the database """
@@ -102,7 +101,7 @@ class Pet(object):
         results = []
         for key in cls.redis.keys():
             if key != 'index':  # filer out our id index
-                data = pickle.loads(cls.redis.get(key))
+                data = json.loads(cls.redis.get(key))
                 pet = Pet(data['id']).deserialize(data)
                 results.append(pet)
         return results
@@ -115,7 +114,7 @@ class Pet(object):
     def find(cls, pet_id):
         """ Query that finds Pets by their id """
         if cls.redis.exists(pet_id):
-            data = pickle.loads(cls.redis.get(pet_id))
+            data = json.loads(cls.redis.get(pet_id))
             pet = Pet(data['id']).deserialize(data)
             return pet
         return None
@@ -132,7 +131,7 @@ class Pet(object):
         results = []
         for key in Pet.redis.keys():
             if key != 'index':  # filer out our id index
-                data = pickle.loads(Pet.redis.get(key))
+                data = json.loads(Pet.redis.get(key))
                 # perform case insensitive search on strings
                 if isinstance(data[attribute], str):
                     test_value = data[attribute].lower()
@@ -165,7 +164,12 @@ class Pet(object):
     def connect_to_redis(cls, hostname, port, password):
         """ Connects to Redis and tests the connection """
         cls.logger.info("Testing Connection to: %s:%s", hostname, port)
-        cls.redis = Redis(host=hostname, port=port, password=password)
+        cls.redis = StrictRedis(host=hostname,
+                                port=port,
+                                password=password,
+                                charset="utf-8",
+                                decode_responses=True)
+
         try:
             cls.redis.ping()
             cls.logger.info("Connection established")

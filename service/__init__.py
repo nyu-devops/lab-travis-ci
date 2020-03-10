@@ -11,10 +11,10 @@ from flask import Flask
 app = Flask(__name__)
 app.config['LOGGING_LEVEL'] = logging.INFO
 
-import service
+from service import service, models
 
 # Set up logging for production
-print 'Setting up logging for {}...'.format(__name__)
+print('Setting up logging for {}...'.format(__name__))
 if __name__ != '__main__':
     gunicorn_logger = logging.getLogger('gunicorn.error')
     if gunicorn_logger:
