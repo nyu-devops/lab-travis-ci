@@ -167,7 +167,7 @@ def get_pets(pet_id):
     return make_response(jsonify(pet.serialize()), status.HTTP_200_OK)
 
 ######################################################################
-# ADD A NEW PET
+# CREATE A NEW PET
 ######################################################################
 @app.route('/pets', methods=['POST'])
 @requires_content_type('application/json', 'application/x-www-form-urlencoded')
@@ -297,6 +297,7 @@ def initialize_logging(log_level=logging.INFO):
             app.logger.removeHandler(log_handler)
         app.logger.addHandler(handler)
         app.logger.setLevel(log_level)
+        app.logger.propagate = False
         app.logger.info('Logging handler established')
 
 

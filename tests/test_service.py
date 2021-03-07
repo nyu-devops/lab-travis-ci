@@ -1,4 +1,4 @@
-# Copyright 2016, 2017 John J. Rofrano. All Rights Reserved.
+# Copyright 2016, 2021 John J. Rofrano. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@ Pet API Service Test Suite
 Test cases can be run with the following:
 nosetests -v --with-spec --spec-color
 """
-
 import unittest
 import logging
-import json
-import service.service as service
+from service import app
+from service.routes import initialize_logging, init_db, data_reset, data_load
 
 # Status Codes
 HTTP_200_OK = 200
@@ -41,12 +40,12 @@ class TestPetService(unittest.TestCase):
     """ Pet Service tests """
 
     def setUp(self):
-        self.app = service.app.test_client()
-        service.initialize_logging(logging.CRITICAL)
-        service.init_db()
-        service.data_reset()
-        service.data_load({"name": "fido", "category": "dog", "available": True})
-        service.data_load({"name": "kitty", "category": "cat", "available": True})
+        self.app = app.test_client()
+        initialize_logging(logging.CRITICAL)
+        init_db()
+        data_reset()
+        data_load({"name": "fido", "category": "dog", "available": True})
+        data_load({"name": "kitty", "category": "cat", "available": True})
 
     def test_index(self):
         """ Test the index page """
