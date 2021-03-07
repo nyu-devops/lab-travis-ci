@@ -12,30 +12,7 @@ This lab contains a `.travis.yml` file that shows you how to run your tests and 
 
 ## Setup
 
-To complete this lab you will need a mirror of this repo. You cannot just clone the repo because you need to make a change in order to trigger Travis CI. You also don't want to Fork it because you want to test Pull Requests and the Pull Request of the Fork will come back to this repo and not your Fork. Therefore you need to copy the repo to your own GitHub account using an opperation know as `mirroring`
-
-### Mirroring the repository
-
-Here are the steps to make a mirror of this repo to your GutHub account:
-
-- Create a new repository in your own GitHub account called: `nyu-lab-travis-ci`
-- Open Terminal on Mac, Command Prompt on Windows
-- Create a bare clone of the repository
-    ```
-    git clone --bare https://github.com/nyu-devops/lab-travis-ci.git
-    ```
-- Push and Mirror the clone to the new repository `nyu-lab-travis-ci` on your GitHub
-    ```
-    cd old-repository.git
-    git push --mirror https://github.com/<your_account>/nyu-lab-travis-ci.git
-    ```
-- Remove the temporary local repository you just created
-    ```
-    cd ..
-    rm -rf lab-travis-ci.git
-    ```
-
-You should now have a mirror of this repository called `nyu-lab-travis-ci` under your own GitHub account that you can make changes to and create Pull Requests and see how Travis CI runs your tests for you with every Pull Request or `push` to master.
+To complete this lab you will need to Fork this repo because you need to make a change in order to trigger Travis CI. When making a Pull Request, you want to make sure that your request is merging with your Fork because the Pull Request of a Fork will default to come back to this repo and not your Fork.
 
 ## If you want to run the tests locally
 
@@ -56,16 +33,16 @@ You can now run `nosetests` to run the TDD tests locally.
 Run the tests using `nosetests` and `coverage`
 
     $ nosetests
-    $ coverage report -m --include=server.py
+    $ coverage report -m
 
 Nose is configured to automatically include the flags `--rednose --with-spec --spec-color --with-coverage` so that red-green-refactor is meaningful. If you are in a command shell that supports colors, passing tests will be green while failing tests will be red.
 
 ## What's featured in the project?
 
-    * server.py -- the main Service using Python Flask and Redis
-    * test_server.py -- test cases using unittest
+    * routes.py -- the main Service using Python Flask and Redis
+    * test_service.py -- test cases using unittest
     * models.py -- the Pet model that wrappers the Redis database
     * test_pets.py -- unit tests that only test the Pet model
     * .travis.yml -- the Travis CI file that automates testing
 
-This repo is part of the CSCI-GA.3033-013 DevOps course taught by John Rofrano at NYU Courant Institute of Mathematical Sciences, New York
+This repository is part of the NYU class CSCI-GA.2810-001: DevOps and Agile Methodologies taught by John Rofrano, Adjunct Instructor, NYU Courant Institute of Mathematical Sciences, Graduate Division, Computer Science.
