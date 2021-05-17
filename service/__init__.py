@@ -9,15 +9,15 @@ from flask import Flask
 
 # Create Flask application
 app = Flask(__name__)
-app.config['LOGGING_LEVEL'] = logging.INFO
+app.config["LOGGING_LEVEL"] = logging.INFO
 
 from service import routes, models
 from service.routes import initialize_logging, init_db
 
 # Set up logging for production
-print('Setting up logging for {}...'.format(__name__))
-if __name__ != '__main__':
-    gunicorn_logger = logging.getLogger('gunicorn.error')
+print("Setting up logging for {}...".format(__name__))
+if __name__ != "__main__":
+    gunicorn_logger = logging.getLogger("gunicorn.error")
     if gunicorn_logger:
         app.logger.handlers = gunicorn_logger.handlers
         app.logger.setLevel(gunicorn_logger.level)
@@ -26,4 +26,4 @@ if __name__ != '__main__':
         initialize_logging()
     init_db()  # make our sqlalchemy tables
 
-app.logger.info('Logging established')
+app.logger.info("Logging established")
