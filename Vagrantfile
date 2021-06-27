@@ -6,8 +6,8 @@ Vagrant.configure(2) do |config|
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
-  config.vm.box = "bento/ubuntu-20.04"
-  config.vm.hostname = "travis"
+  config.vm.box = "ubuntu/focal64"
+  config.vm.hostname = "ubuntu"
 
   config.vm.network "forwarded_port", guest: 5000, host: 8080, host_ip: "127.0.0.1"
   config.vm.network "private_network", ip: "192.168.33.10"
@@ -29,7 +29,7 @@ Vagrant.configure(2) do |config|
   end
 
   ############################################################
-  # Provider for Docker
+  # Provider for Docker on Intel or ARM (aarch64)
   ############################################################
   config.vm.provider :docker do |docker, override|
     override.vm.box = nil
@@ -37,7 +37,9 @@ Vagrant.configure(2) do |config|
     docker.remains_running = true
     docker.has_ssh = true
     docker.privileged = true
-    docker.create_args = ["-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro"]
+    docker.volumes = ["/sys/fs/cgroup:/sys/fs/cgroup:ro"]
+    # Uncomment to force arm64 for testing images on Intel
+    # docker.create_args = ["--platform=linux/arm64"]     
   end
 
   # Copy your .gitconfig file so that your git credentials are correct
@@ -50,29 +52,34 @@ Vagrant.configure(2) do |config|
     config.vm.provision "file", source: "~/.ssh/id_rsa", destination: "~/.ssh/id_rsa"
   end
 
-  if File.exists?(File.expand_path("~/.ssh/id_rsa.pub"))
-    config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/id_rsa.pub"
-  end
-
   # Copy your .vimrc file so that your vi looks like you expect
   if File.exists?(File.expand_path("~/.vimrc"))
     config.vm.provision "file", source: "~/.vimrc", destination: "~/.vimrc"
   end
 
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
-  # documentation for more information about their specific syntax and use.
+  ######################################################################
+  # Create a Python 3 development environment
+  ######################################################################
   config.vm.provision "shell", inline: <<-SHELL
+    echo "****************************************"
+    echo " INSTALLING PYTHON 3 ENVIRONMENT..."
+    echo "****************************************"
+    # Install Python 3 and dev tools 
     apt-get update
-    apt-get install -y git python3 python3-pip python3-venv
+    apt-get install -y git vim tree python3 python3-pip python3-venv
     apt-get -y autoremove
-    # Install app dependencies
-    echo "\n******************************"
-    echo " Installing App Dependencies"
-    echo "******************************\n"
-    pip3 install -r /vagrant/requirements.txt
+    
+    # Need PostgreSQL development library to compile on arm64
+    apt-get install -y libpq-dev
+    # Create a Python3 Virtual Environment and Activate it in .profile
+    sudo -H -u vagrant sh -c 'python3 -m venv ~/venv'
+    sudo -H -u vagrant sh -c 'echo ". ~/venv/bin/activate" >> ~/.profile'
+    
+    # Install app dependencies in virtual environment as vagrant user
+    sudo -H -u vagrant sh -c '. ~/venv/bin/activate && pip install -U pip && pip install wheel'
+    sudo -H -u vagrant sh -c '. ~/venv/bin/activate && cd /vagrant && pip install -r requirements.txt'
   SHELL
-
+  
   ######################################################################
   # Add Redis docker container
   ######################################################################
