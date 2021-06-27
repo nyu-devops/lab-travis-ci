@@ -11,8 +11,7 @@ from flask import Flask
 app = Flask(__name__)
 app.config["LOGGING_LEVEL"] = logging.INFO
 
-from service import routes, models
-from service.routes import initialize_logging, init_db
+from service import routes, models, error_handlers
 
 # Set up logging for production
 print("Setting up logging for {}...".format(__name__))
@@ -23,7 +22,7 @@ if __name__ != "__main__":
         app.logger.setLevel(gunicorn_logger.level)
         app.logger.propagate = False
     else:
-        initialize_logging()
-    init_db()  # make our sqlalchemy tables
+        routes.initialize_logging()
+    routes.init_db()  # make our sqlalchemy tables
 
 app.logger.info("Logging established")
