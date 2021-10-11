@@ -180,7 +180,7 @@ class Pet(object):
             cls.redis.ping()
             cls.logger.info("Connection established")
         except ConnectionError:
-            cls.logger.info("Connection Error from: %s:%s", hostname, port)
+            cls.logger.warning("Connection Error from: %s:%s", hostname, port)
             cls.redis = None
         return cls.redis
 
@@ -190,7 +190,7 @@ class Pet(object):
         Initialized Redis database connection
 
         This method will work in the following conditions:
-          1) In Bluemix with Redis bound through VCAP_SERVICES
+          1) In IBM Cloud with Redis bound through VCAP_SERVICES
           2) With Redis running on the local server as with Travis CI
           3) With Redis --link in a Docker container called 'redis'
           4) Passing in your own Redis connection object
@@ -210,7 +210,8 @@ class Pet(object):
                 cls.redis = None
                 raise ConnectionError("Could not connect to the Redis Service")
             return
-        # Get the credentials from the Bluemix environment
+
+        # Get the credentials from the IBM Cloud environment
         if "VCAP_SERVICES" in os.environ:
             cls.logger.info("Using VCAP_SERVICES...")
             vcap_services = os.environ["VCAP_SERVICES"]

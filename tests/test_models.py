@@ -35,19 +35,21 @@ VCAP_SERVICES = {
     ]
 }
 
+
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
 class TestPets(unittest.TestCase):
     """Test Cases for Pet Model"""
 
-    def setUp(self):
-        """Initialize the Redis database"""
+    @classmethod
+    def setUpClass(cls):
+        """initialize the database"""
         Pet.init_db()
+
+    def setUp(self):
+        """Start in a good known state"""
         Pet.remove_all()
-        # Pet.init_db(Redis(host='127.0.0.1', port=6379))
-        # Pet(0, 'fido', 'dog').save()
-        # Pet(0, 'kitty', 'cat').save()
 
     def test_create_a_pet(self):
         """Create a pet and assert that it exists"""
@@ -211,6 +213,8 @@ class TestPets(unittest.TestCase):
             ConnectionError, Pet.init_db, Redis(host="127.0.0.1", port=6300)
         )
         self.assertIsNone(Pet.redis)
+        # Reestablish good connection
+        Pet.init_db()
 
     @patch.dict(os.environ, {"VCAP_SERVICES": json.dumps(VCAP_SERVICES)})
     def test_vcap_services(self):
@@ -218,12 +222,13 @@ class TestPets(unittest.TestCase):
         Pet.init_db()
         self.assertIsNotNone(Pet.redis)
 
-    @patch("redis.Redis.ping")
-    def test_redis_connection_error(self, ping_error_mock):
+    def test_redis_connection_error(self):
         """Test a Bad Redis connection"""
-        ping_error_mock.side_effect = ConnectionError()
-        self.assertRaises(ConnectionError, Pet.init_db)
-        self.assertIsNone(Pet.redis)
+        with patch("redis.Redis.ping") as ping_error_mock:
+            ping_error_mock.side_effect = ConnectionError()
+            self.assertRaises(ConnectionError, Pet.init_db)
+            self.assertIsNone(Pet.redis)
+        Pet.init_db()
 
 
 ######################################################################
