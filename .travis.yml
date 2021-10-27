@@ -11,8 +11,8 @@ before_script: redis-cli ping
 script:
   - nosetests
 
-#after_success:
-#  - codecov
+after_success:
+  - codecov
 
 services:
   - redis-server
