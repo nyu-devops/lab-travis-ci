@@ -17,4 +17,3 @@ pylint>=2.8.3
 
 # Code coverage
 coverage==4.5.4
-codecov==2.1.10
