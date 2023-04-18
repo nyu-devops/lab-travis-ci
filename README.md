@@ -46,3 +46,5 @@ Nose is configured to automatically include the flags `--rednose --with-spec --s
     * .travis.yml -- the Travis CI file that automates testing
 
 This repository is part of the NYU class CSCI-GA.2810-001: DevOps and Agile Methodologies taught by John Rofrano, Adjunct Instructor, NYU Courant Institute of Mathematical Sciences, Graduate Division, Computer Science.
+
+test deploy
