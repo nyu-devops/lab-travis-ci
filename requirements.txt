@@ -1,12 +1,12 @@
 # Lock Dependencies
-Werkzeug==1.0.1
+Werkzeug==2.2.3
 
 # Build
-Flask==1.1.1
+Flask==2.2.5
 redis>=2.10
 
 # Runtime
-gunicorn==20.1.0
+gunicorn==22.0.0
 honcho==1.0.1
 
 # Testing
